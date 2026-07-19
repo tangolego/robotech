@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>명사+동사 카드 퀴즈</title>
+<style>
+  :root{
+    --paper:#efeae0;
+    --card:#fffdf8;
+    --ink:#22303f;
+    --ink-soft:#5b6b78;
+    --teal:#2f6f5e;
+    --teal-deep:#204d41;
+    --brick:#b8433a;
+    --mustard:#c9a227;
+    --plum:#6a4c8c;
+    --line:#d8d0bd;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:
+      linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0) 200px),
+      repeating-linear-gradient(0deg, rgba(34,48,63,0.035) 0px, rgba(34,48,63,0.035) 1px, transparent 1px, transparent 34px);
+    font-family: "Noto Sans KR", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px 16px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:460px;
+  }
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:18px;
+    padding:0 4px;
+  }
+  .masthead h1{
+    font-family: Georgia, "Nanum Myeongjo", serif;
+    font-size:21px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    margin:0;
+    color:var(--ink);
+  }
+  .masthead .sub{
+    font-size:12px;
+    color:var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .scorebar{
+    display:flex;
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .chip{
+    flex:1;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:8px 10px;
+    text-align:center;
+  }
+  .chip .num{
+    font-family: Georgia, serif;
+    font-size:19px;
+    font-weight:700;
+    line-height:1.1;
+  }
+  .chip .lbl{
+    font-size:10px;
+    color:var(--ink-soft);
+    margin-top:2px;
+    letter-spacing:0.04em;
+  }
+  .chip.correct .num{color:var(--teal-deep);}
+  .chip.wrong .num{color:var(--brick);}
+
+  .card{
+    position:relative;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 10px 24px -14px rgba(34,48,63,0.35);
+    padding:26px 22px 22px;
+    overflow:hidden;
+  }
+  .tab{
+    position:absolute;
+    top:0;
+    right:22px;
+    color:#fff;
+    font-family: Georgia, serif;
+    font-size:12px;
+    font-weight:700;
+    padding:4px 12px 6px;
+    border-radius:0 0 8px 8px;
+    letter-spacing:0.03em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+  }
+  .tab.noun{background:var(--mustard); color:#3a2f05;}
+  .tab.verb{background:var(--plum); color:#fff;}
+
+  .word-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:14px 0 4px;
+  }
+  .word{
+    font-family: Georgia, "Times New Roman", serif;
+    font-size:38px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    word-break:break-word;
+  }
+  .listen-btn{
+    flex-shrink:0;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    border:1.5px solid var(--teal);
+    background:transparent;
+    color:var(--teal);
+    font-size:18px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: background .15s, transform .1s;
+  }
+  .listen-btn:hover{background:rgba(47,111,94,0.08);}
+  .listen-btn:active{transform:scale(0.94);}
+  .listen-btn.playing{background:var(--teal); color:#fff;}
+
+  .prompt{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:18px;
+  }
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .opt{
+    text-align:left;
+    padding:13px 16px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    background:#fffefb;
+    font-size:14.5px;
+    line-height:1.4;
+    color:var(--ink);
+    cursor:pointer;
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    transition: border-color .15s, background .15s, transform .08s;
+  }
+  .opt .idx{
+    font-family:Georgia, serif;
+    font-weight:700;
+    color:var(--ink-soft);
+    font-size:13px;
+    width:16px;
+    flex-shrink:0;
+    padding-top:1px;
+  }
+  .opt:hover:not(:disabled){border-color:var(--teal); transform:translateY(-1px);}
+  .opt:disabled{cursor:default;}
+  .opt.correct{background:rgba(47,111,94,0.12); border-color:var(--teal-deep); color:var(--teal-deep); font-weight:700;}
+  .opt.wrong{background:rgba(184,67,58,0.1); border-color:var(--brick); color:var(--brick); font-weight:700;}
+  .opt.dim{opacity:0.45;}
+
+  .footer-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:18px;
+    gap:12px;
+    min-height:20px;
+  }
+  .feedback{
+    font-size:13px;
+    font-weight:700;
+  }
+  .feedback.correct{color:var(--teal-deep);}
+  .feedback.wrong{color:var(--brick);}
+
+  .next-btn{
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    border-radius:9px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    transition: background .15s;
+    flex-shrink:0;
+  }
+  .next-btn:hover{background:var(--teal-deep);}
+  .next-btn:disabled{background:var(--line); cursor:default; color:var(--ink-soft);}
+
+  .legend{
+    display:flex;
+    gap:14px;
+    justify-content:center;
+    margin-top:16px;
+    font-size:11px;
+    color:var(--ink-soft);
+  }
+  .legend span{display:inline-flex; align-items:center; gap:5px;}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block;}
+  .dot.noun{background:var(--mustard);}
+  .dot.verb{background:var(--plum);}
+
+  @media (max-width:400px){
+    .word{font-size:30px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="masthead">
+    <h1>명사+동사 카드 퀴즈</h1>
+    <div class="sub" id="progressLabel">1 / 350</div>
+  </div>
+
+  <div class="scorebar">
+    <div class="chip correct">
+      <div class="num" id="correctCount">0</div>
+      <div class="lbl">정답</div>
+    </div>
+    <div class="chip wrong">
+      <div class="num" id="wrongCount">0</div>
+      <div class="lbl">오답</div>
+    </div>
+    <div class="chip">
+      <div class="num" id="streakCount">0</div>
+      <div class="lbl">연속 정답</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tab noun" id="typeTab">명사</div>
+    <div class="word-row">
+      <div class="word" id="wordText">word</div>
+      <button class="listen-btn" id="listenBtn" title="다시 듣기">🔊</button>
+    </div>
+    <div class="prompt">이 단어의 뜻으로 알맞은 것을 고르세요.</div>
+    <div class="options" id="options"></div>
+    <div class="footer-row">
+      <div class="feedback" id="feedback"></div>
+      <button class="next-btn" id="nextBtn" disabled>다음 단어 →</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot noun"></i>명사</span>
+    <span><i class="dot verb"></i>동사</span>
+  </div>
+</div>
+
+<script>
+// ---- 명사 등 (기존 단어장 첫 칼럼) ----
+const VOCAB_NOUNS = [
+["name","이름"],["hello","안녕"],["brother","남자 형제"],["your","너의"],["worker","노동자"],
+["that","저것"],["sorry","미안한"],["sister","여자 형제"],["late","늦은"],
+["computer","컴퓨터"],["baseball","야구"],["artist","화가"],["who","누구"],["where","어디에"],
+["tomato","토마토"],["sofa","소파"],["rabbit","토끼"],["kitchen","부엌"],["cute","귀여운"],
+["pencil","연필"],["or","또는"],["class","수업"],["bag","가방"],["area","지역"],
+["week","주"],["player","선수"],["day","하루"],["concert","콘서트"],["busy","바쁜"],
+["year","해"],["team","팀"],["soccer","축구"],["smart","똑똑한"],["school","학교"],
+["old","나이 든"],["grade","학년"],["good","좋은"],["friend","친구"],["chef","요리사"],
+["mild","순한"],["money","돈"],["note","메모"],["oats","귀리"],["ox","황소"],["pie","파이"],
+["before","전에"],["during","~동안에"],["lie","눕다"],["hand","손"],["male","남자(수컷)"],
+["meal","식사"],["night","밤"],["novel","소설"],["vine","덩굴"],
+["morning","아침"],["homework","숙제"],["fruit","과일"],["her","그녀의"],["every","모든"],
+["ore","광석"],["math","수학"],["side","옆"],["loud","시끄러운"],
+["vegetable","채소"],["dinner","저녁 식사"],
+["English","영어"],["food","음식"],["leg","다리"],["subway","지하철"],["pale","창백한"],
+["fee","요금"],["after","~후에"],["breakfast","아침 식사"],["candy","사탕"],
+["dish","접시"],["high","높은"],["water","물"],["age","나이"],
+["cookie","쿠키"],["oak","참나무"],["slowly","천천히"],["fast","빠른"],
+["same","같은"],["dog","개"],["sore","아픈(쓰라린)"],["Thai","태국의"],
+["early","이른"],["together","함께"],["music","음악"],
+["game","게임"],["cheese","치즈"],["up","위로"],
+["rope","줄"],["gas","가스"],["dancer","무용수"],
+["happy","행복한"],["umbrella","우산"],["bad","나쁜"],["bear","곰"],["gold","금"],
+["easy","쉬운"],["carrot","당근"],["doctor","의사"],["people","사람들"],["restaurant","식당"],["sick","아픈"],["all","모든"],["church","교회"],
+["long","긴"],["Sunday","일요일"],["city","도시"],["family","가족"],["foot","발"],
+["small","작은"],["Tuesday","화요일"],["chocolate","초콜릿"],["number","숫자"],
+["phone","전화"],["swimming","수영"],["three","셋"],["violin","바이올린"],["camping","캠핑"],
+["grandparents","조부모"],["Monday","월요일"],["science","과학"],["sun","태양"],["Thursday","목요일"],
+["bedtime","취침 시간"],["lunch","점심 식사"],["floor","바닥"],
+["inside","안에"],["near","가까운"],["snack","간식"],["ready","준비된"],["their","그들의"],
+["big","큰"],["blue","파란"],["cold","추운"],["fare","요금(교통)"],["five","다섯"],
+["full","가득 찬"],["hungry","배고픈"],["many","많은"],["pretty","예쁜"],["red","빨간"],
+["sad","슬픈"],["slow","느린"],["soft","부드러운"],["tall","키가 큰"],["yellow","노란"],
+["young","젊은"],["beautiful","아름다운"],["hair","머리카락"],["new","새로운"],["song","노래"],
+["animal","동물"],["bike","자전거"],["bird","새"],["elephant","코끼리"],["girl","소녀"],
+["noisy","시끄러운"],["runner","달리는 사람"],["turtle","거북이"],["very","매우"],["hard","단단한"],
+["black","검은"],["bread","빵"],["delicious","맛있는"],["art","미술"],["coin","동전"],
+["eye","눈"],["moon","달"],["noon","정오"],["soda","탄산음료"],
+["soy","콩"],["white","흰"],["cream","크림"],["ice","얼음"],["coke","콜라"],
+["elk","엘크"],["few","적은"],["jam","잼"],["little","작은"],
+["lots","많음"],["much","많은"],["butter","버터"],["child","아이"],["flour","밀가루"],
+["question","질문"],["tree","나무"],["any","어떤"],["noise","소음"],["soup","수프"],
+["this","이것"],["time","시간"],["too","또한"],["happily","행복하게"],["wire","전선"],
+["careful","조심스러운"],["easily","쉽게"],["friendly","다정한"],["lovely","사랑스러운"],["quick","빠른"],
+["sadly","슬프게"],["carefully","조심스럽게"],["pair","쌍"],["sky","하늘"],["snail","달팽이"],
+["wall","벽"],["wit","재치"],["always","항상"],["enough","충분한"],["far","멀리"],
+["here","여기"],["how","어떻게"],["never","결코 ~않다"],["now","지금"],["often","자주"],
+["oil","기름"],["outside","밖에"],["soon","곧"],["usually","보통"],["yesterday","어제"],
+["baby","아기"],["noodle","국수"],["nap","낮잠"],["picture","사진"],
+["heavy","무거운"],["house","집"],["pianist","피아니스트"],["speaker","스피커"],["walker","걷는 사람"],
+["eagle","독수리"],["highly","매우"],["word","단어"],["but","그러나"],["color","색"],
+["fun","재미"],["person","사람"],["really","정말로"],
+["right","옳은"],["bottle","병"],["diligent","부지런한"],["giraffe","기린"],["just","방금"],
+["hardly","거의 ~않다"],["Korean","한국인"],["neck","목"],["weather","날씨"],["winter","겨울"],
+["problem","문제"],["what","무엇"],["if","만약"],["wet","젖은"]
+];
+
+// ---- 동사 (동사 표) ----
+const VOCAB_VERBS = [
+["love","사랑하다 / 사랑"],
+["hike","하이킹하다 / 도보 여행"],
+["cook","요리하다 / 요리사"],
+["fix","고치다, 해결하다"],
+["go","가다"],
+["live","살다 / 살아있는"],
+["make","만들다"],
+["move","움직이다, 이사하다 / 움직임"],
+["need","필요로 하다 / 필요, 요구"],
+["see","보다, 만나다, 알다"],
+["sit","앉다"],
+["start","시작하다 / 시작, 출발"],
+["walk","걷다, 산책시키다 / 산책"],
+["wash","씻다, 세탁하다 / 씻기, 세탁"],
+["watch","보다, 지켜보다 / 손목시계"],
+["like","좋아하다"],
+["run","달리다, 운영하다 / 달리기"],
+["sleep","자다 / 잠, 수면"],
+["meet","만나다 / 운동 경기, 모임"],
+["tie","묶다, 매다 / 넥타이, 끈"],
+["write","쓰다, 편지를 쓰다"],
+["brush","솔질하다, 붓칠하다 / 솔, 빗, 붓"],
+["cry","울다, 소리치다 / 울음소리, 외침"],
+["feel","느끼다 / 촉감, 느낌"],
+["fly","날다, 비행하다 / 파리"],
+["speak","말하다, 이야기하다"],
+["study","공부하다 / 공부, 연구, 서재"],
+["do","하다 / (의문문/부정문 조동사)"],
+["earn","(돈 등을) 벌다, 얻다"],
+["work","일하다, 작동하다 / 일, 직장"],
+["ride","타다, 승차하다 / 타기, 승차"],
+["win","이기다, 얻다 / 승리"],
+["play","놀다, 연주하다, 경기하다 / 연극"],
+["snow","눈 / 눈이 내리다"],
+["feed","먹이를 주다"],
+["get","얻다, 받다, 되다"],
+["won","이겼다 / 원 (한국 통화 단위)"],
+["jump","뛰다, 점프하다 / 점프"],
+["dance","춤추다 / 춤, 무용"],
+["teach","가르치다"],
+["drink","마시다 / 음료"],
+["help","돕다, 도와주다 / 도움"],
+["swim","수영하다 / 수영"],
+["visit","방문하다 / 방문"],
+["read","읽다 / 읽기, 독서"],
+["sell","팔다"],
+["come","오다"],
+["take","데려가다, 가지다, 잡다"],
+["know","알다"],
+["look","보다 / 표정, 모습"],
+["paint","페인트칠하다 / 페인트"]
+];
+
+// 명사 목록과 동사 목록을 하나로 합치기 (겹치는 단어는 동사 쪽 뜻을 우선 사용)
+const merged = new Map();
+VOCAB_NOUNS.forEach(([w,m]) => merged.set(w, {word:w, meaning:m, type:'명사'}));
+VOCAB_VERBS.forEach(([w,m]) => merged.set(w, {word:w, meaning:m, type:'동사'}));
+const VOCAB = Array.from(merged.values());
+
+let deck = [];
+let currentIndex = 0;
+let correct = 0, wrong = 0, streak = 0;
+let answered = false;
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function buildDeck(){
+  deck = shuffle(VOCAB);
+  currentIndex = 0;
+}
+
+function pickOptions(correctItem){
+  const others = VOCAB.filter(v => v.word !== correctItem.word);
+  const distractors = shuffle(others).slice(0,3).map(v => v.meaning);
+  const opts = shuffle([correctItem.meaning, ...distractors]);
+  return opts;
+}
+
+function speak(word){
+  if(!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(word);
+  u.lang = 'en-US';
+  u.rate = 0.85;
+  const btn = document.getElementById('listenBtn');
+  btn.classList.add('playing');
+  u.onend = () => btn.classList.remove('playing');
+  u.onerror = () => btn.classList.remove('playing');
+  window.speechSynthesis.speak(u);
+}
+
+function renderQuestion(){
+  if(currentIndex >= deck.length){
+    buildDeck();
+  }
+  answered = false;
+  const item = deck[currentIndex];
+  document.getElementById('wordText').textContent = item.word;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('progressLabel').textContent = (currentIndex+1) + ' / ' + deck.length;
+
+  const typeTab = document.getElementById('typeTab');
+  typeTab.textContent = item.type;
+  typeTab.className = 'tab ' + (item.type === '동사' ? 'verb' : 'noun');
+
+  const opts = pickOptions(item);
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = '<span class="idx">' + letters[i] + '</span><span>' + opt + '</span>';
+    btn.onclick = () => handleAnswer(btn, opt, item.meaning);
+    optionsDiv.appendChild(btn);
+  });
+
+  speak(item.word);
+}
+
+function handleAnswer(btn, chosen, correctMeaning){
+  if(answered) return;
+  answered = true;
+  const allOpts = document.querySelectorAll('.opt');
+  allOpts.forEach(o => { o.disabled = true; });
+
+  const isCorrect = chosen === correctMeaning;
+  const feedback = document.getElementById('feedback');
+
+  allOpts.forEach(o => {
+    const text = o.querySelector('span:last-child').textContent;
+    if(text === correctMeaning){
+      o.classList.add('correct');
+    } else if(o === btn && !isCorrect){
+      o.classList.add('wrong');
+    } else {
+      o.classList.add('dim');
+    }
+  });
+
+  if(isCorrect){
+    correct++; streak++;
+    feedback.textContent = '정답이에요!';
+    feedback.classList.add('correct');
+  } else {
+    wrong++; streak = 0;
+    feedback.textContent = '아쉬워요, 정답은 위에 표시했어요.';
+    feedback.classList.add('wrong');
+  }
+  updateScoreboard();
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function updateScoreboard(){
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('streakCount').textContent = streak;
+}
+
+document.getElementById('nextBtn').onclick = () => {
+  currentIndex++;
+  renderQuestion();
+};
+
+document.getElementById('listenBtn').onclick = () => {
+  const word = document.getElementById('wordText').textContent;
+  speak(word);
+};
+
+buildDeck();
+renderQuestion();
+</script>
+</body>
+</html>
