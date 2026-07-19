@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>동사 카드 퀴즈</title>
+<style>
+  :root{
+    --paper:#efeae0;
+    --card:#fffdf8;
+    --ink:#22303f;
+    --ink-soft:#5b6b78;
+    --teal:#2f6f5e;
+    --teal-deep:#204d41;
+    --brick:#b8433a;
+    --mustard:#c9a227;
+    --line:#d8d0bd;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:
+      linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0) 200px),
+      repeating-linear-gradient(0deg, rgba(34,48,63,0.035) 0px, rgba(34,48,63,0.035) 1px, transparent 1px, transparent 34px);
+    font-family: "Noto Sans KR", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px 16px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:460px;
+  }
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:18px;
+    padding:0 4px;
+  }
+  .masthead h1{
+    font-family: Georgia, "Nanum Myeongjo", serif;
+    font-size:22px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    margin:0;
+    color:var(--ink);
+  }
+  .masthead .sub{
+    font-size:12px;
+    color:var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .scorebar{
+    display:flex;
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .chip{
+    flex:1;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:8px 10px;
+    text-align:center;
+  }
+  .chip .num{
+    font-family: Georgia, serif;
+    font-size:19px;
+    font-weight:700;
+    line-height:1.1;
+  }
+  .chip .lbl{
+    font-size:10px;
+    color:var(--ink-soft);
+    margin-top:2px;
+    letter-spacing:0.04em;
+  }
+  .chip.correct .num{color:var(--teal-deep);}
+  .chip.wrong .num{color:var(--brick);}
+
+  .card{
+    position:relative;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 10px 24px -14px rgba(34,48,63,0.35);
+    padding:26px 22px 22px;
+    overflow:hidden;
+  }
+  .tab{
+    position:absolute;
+    top:0;
+    right:22px;
+    background:var(--mustard);
+    color:#3a2f05;
+    font-family: Georgia, serif;
+    font-size:12px;
+    font-weight:700;
+    padding:4px 12px 6px;
+    border-radius:0 0 8px 8px;
+    letter-spacing:0.02em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+  }
+  .word-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:14px 0 4px;
+  }
+  .word{
+    font-family: Georgia, "Times New Roman", serif;
+    font-size:38px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    word-break:break-word;
+  }
+  .listen-btn{
+    flex-shrink:0;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    border:1.5px solid var(--teal);
+    background:transparent;
+    color:var(--teal);
+    font-size:18px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: background .15s, transform .1s;
+  }
+  .listen-btn:hover{background:rgba(47,111,94,0.08);}
+  .listen-btn:active{transform:scale(0.94);}
+  .listen-btn.playing{background:var(--teal); color:#fff;}
+
+  .prompt{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:18px;
+  }
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .opt{
+    text-align:left;
+    padding:13px 16px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    background:#fffefb;
+    font-size:14.5px;
+    line-height:1.4;
+    color:var(--ink);
+    cursor:pointer;
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    transition: border-color .15s, background .15s, transform .08s;
+  }
+  .opt .idx{
+    font-family:Georgia, serif;
+    font-weight:700;
+    color:var(--ink-soft);
+    font-size:13px;
+    width:16px;
+    flex-shrink:0;
+    padding-top:1px;
+  }
+  .opt:hover:not(:disabled){border-color:var(--teal); transform:translateY(-1px);}
+  .opt:disabled{cursor:default;}
+  .opt.correct{background:rgba(47,111,94,0.12); border-color:var(--teal-deep); color:var(--teal-deep); font-weight:700;}
+  .opt.wrong{background:rgba(184,67,58,0.1); border-color:var(--brick); color:var(--brick); font-weight:700;}
+  .opt.dim{opacity:0.45;}
+
+  .footer-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:18px;
+    gap:12px;
+    min-height:20px;
+  }
+  .feedback{
+    font-size:13px;
+    font-weight:700;
+  }
+  .feedback.correct{color:var(--teal-deep);}
+  .feedback.wrong{color:var(--brick);}
+
+  .next-btn{
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    border-radius:9px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    transition: background .15s;
+    flex-shrink:0;
+  }
+  .next-btn:hover{background:var(--teal-deep);}
+  .next-btn:disabled{background:var(--line); cursor:default; color:var(--ink-soft);}
+
+  .streak-note{
+    text-align:center;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-top:14px;
+  }
+
+  @media (max-width:400px){
+    .word{font-size:30px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="masthead">
+    <h1>동사 카드 퀴즈</h1>
+    <div class="sub" id="progressLabel">1 / 51</div>
+  </div>
+
+  <div class="scorebar">
+    <div class="chip correct">
+      <div class="num" id="correctCount">0</div>
+      <div class="lbl">정답</div>
+    </div>
+    <div class="chip wrong">
+      <div class="num" id="wrongCount">0</div>
+      <div class="lbl">오답</div>
+    </div>
+    <div class="chip">
+      <div class="num" id="streakCount">0</div>
+      <div class="lbl">연속 정답</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tab" id="pageTab">p.72</div>
+    <div class="word-row">
+      <div class="word" id="wordText">word</div>
+      <button class="listen-btn" id="listenBtn" title="다시 듣기">🔊</button>
+    </div>
+    <div class="prompt">이 동사의 뜻으로 알맞은 것을 고르세요.</div>
+    <div class="options" id="options"></div>
+    <div class="footer-row">
+      <div class="feedback" id="feedback"></div>
+      <button class="next-btn" id="nextBtn" disabled>다음 단어 →</button>
+    </div>
+  </div>
+
+  <div class="streak-note">단어를 자동으로 읽어줍니다 · 스피커 버튼을 눌러 다시 들을 수 있어요</div>
+</div>
+
+<script>
+// word, meaning, textbook page number
+const VOCAB = [
+["love","사랑하다 / 사랑",72],
+["hike","하이킹하다 / 도보 여행",76],
+["cook","요리하다 / 요리사",77],
+["fix","고치다, 해결하다",77],
+["go","가다",77],
+["live","살다 / 살아있는",77],
+["make","만들다",77],
+["move","움직이다, 이사하다 / 움직임",77],
+["need","필요로 하다 / 필요, 요구",77],
+["see","보다, 만나다, 알다",77],
+["sit","앉다",77],
+["start","시작하다 / 시작, 출발",77],
+["walk","걷다, 산책시키다 / 산책",77],
+["wash","씻다, 세탁하다 / 씻기, 세탁",77],
+["watch","보다, 지켜보다 / 손목시계",77],
+["like","좋아하다",78],
+["run","달리다, 운영하다 / 달리기",78],
+["sleep","자다 / 잠, 수면",78],
+["meet","만나다 / 운동 경기, 모임",80],
+["tie","묶다, 매다 / 넥타이, 끈",80],
+["write","쓰다, 편지를 쓰다",81],
+["brush","솔질하다, 붓칠하다 / 솔, 빗, 붓",82],
+["cry","울다, 소리치다 / 울음소리, 외침",82],
+["feel","느끼다 / 촉감, 느낌",82],
+["fly","날다, 비행하다 / 파리",82],
+["speak","말하다, 이야기하다",82],
+["study","공부하다 / 공부, 연구, 서재",82],
+["do","하다 / (의문문/부정문 조동사)",83],
+["earn","(돈 등을) 벌다, 얻다",84],
+["work","일하다, 작동하다 / 일, 직장",85],
+["ride","타다, 승차하다 / 타기, 승차",86],
+["win","이기다, 얻다 / 승리",87],
+["play","놀다, 연주하다, 경기하다 / 연극",88],
+["snow","눈 / 눈이 내리다",91],
+["feed","먹이를 주다",92],
+["get","얻다, 받다, 되다",92],
+["won","이겼다 / 원 (한국 통화 단위)",92],
+["jump","뛰다, 점프하다 / 점프",93],
+["dance","춤추다 / 춤, 무용",95],
+["teach","가르치다",96],
+["drink","마시다 / 음료",99],
+["help","돕다, 도와주다 / 도움",99],
+["swim","수영하다 / 수영",101],
+["visit","방문하다 / 방문",104],
+["read","읽다 / 읽기, 독서",105],
+["sell","팔다",112],
+["come","오다",115],
+["take","데려가다, 가지다, 잡다",131],
+["know","알다",135],
+["look","보다 / 표정, 모습",135],
+["paint","페인트칠하다 / 페인트",135]
+];
+
+let deck = [];
+let currentIndex = 0;
+let correct = 0, wrong = 0, streak = 0;
+let answered = false;
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function buildDeck(){
+  deck = shuffle(VOCAB);
+  currentIndex = 0;
+}
+
+function pickOptions(correctItem){
+  const others = VOCAB.filter(v => v[0] !== correctItem[0]);
+  const distractors = shuffle(others).slice(0,3).map(v => v[1]);
+  const opts = shuffle([correctItem[1], ...distractors]);
+  return opts;
+}
+
+function speak(word){
+  if(!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(word);
+  u.lang = 'en-US';
+  u.rate = 0.85;
+  const btn = document.getElementById('listenBtn');
+  btn.classList.add('playing');
+  u.onend = () => btn.classList.remove('playing');
+  u.onerror = () => btn.classList.remove('playing');
+  window.speechSynthesis.speak(u);
+}
+
+function renderQuestion(){
+  if(currentIndex >= deck.length){
+    buildDeck();
+  }
+  answered = false;
+  const [word, meaning, page] = deck[currentIndex];
+  document.getElementById('wordText').textContent = word;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('progressLabel').textContent = (currentIndex+1) + ' / ' + deck.length;
+  document.getElementById('pageTab').textContent = 'p.' + page;
+
+  const opts = pickOptions([word, meaning]);
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = '<span class="idx">' + letters[i] + '</span><span>' + opt + '</span>';
+    btn.onclick = () => handleAnswer(btn, opt, meaning);
+    optionsDiv.appendChild(btn);
+  });
+
+  speak(word);
+}
+
+function handleAnswer(btn, chosen, correctMeaning){
+  if(answered) return;
+  answered = true;
+  const allOpts = document.querySelectorAll('.opt');
+  allOpts.forEach(o => { o.disabled = true; });
+
+  const isCorrect = chosen === correctMeaning;
+  const feedback = document.getElementById('feedback');
+
+  allOpts.forEach(o => {
+    const text = o.querySelector('span:last-child').textContent;
+    if(text === correctMeaning){
+      o.classList.add('correct');
+    } else if(o === btn && !isCorrect){
+      o.classList.add('wrong');
+    } else {
+      o.classList.add('dim');
+    }
+  });
+
+  if(isCorrect){
+    correct++; streak++;
+    feedback.textContent = '정답이에요!';
+    feedback.classList.add('correct');
+  } else {
+    wrong++; streak = 0;
+    feedback.textContent = '아쉬워요, 정답은 위에 표시했어요.';
+    feedback.classList.add('wrong');
+  }
+  updateScoreboard();
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function updateScoreboard(){
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('streakCount').textContent = streak;
+}
+
+document.getElementById('nextBtn').onclick = () => {
+  currentIndex++;
+  renderQuestion();
+};
+
+document.getElementById('listenBtn').onclick = () => {
+  const word = document.getElementById('wordText').textContent;
+  speak(word);
+};
+
+buildDeck();
+renderQuestion();
+</script>
+</body>
+</html>
