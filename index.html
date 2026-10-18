@@ -1,14 +1,176 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>이미지 표시 예제</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>숨은그림찾기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --paper:#f3efe6;
+  --ink:#2a2622;
+  --ink-soft:#6b645b;
+  --pencil:#8a8378;
+  --space:#171a3a;
+  --space-2:#2b2f66;
+  --star:#ffe79a;
+  --cat:#ff9a62;
+  --sketch:#fbfaf6;
+  --sketch-line:#4b5358;
+  --blue:#2563d6;
+  --font-display:'Gaegu','Noto Sans KR',system-ui,sans-serif;
+  --font-body:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#1b1a18;--ink:#f1ece3;--ink-soft:#a39b8f;--pencil:#7d766b;
+  }
+}
+:root[data-theme="dark"]{--paper:#1b1a18;--ink:#f1ece3;--ink-soft:#a39b8f;--pencil:#7d766b}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;min-height:100vh;
+  background:var(--paper);color:var(--ink);
+  font-family:var(--font-body);line-height:1.5;
+  padding:clamp(20px,5vw,56px) clamp(16px,4vw,48px) 40px;
+  -webkit-tap-highlight-color:transparent;
+}
+.wrap{max-width:1040px;margin-inline:auto}
+h1{
+  margin:0;font-family:var(--font-display);font-weight:700;
+  font-size:clamp(44px,9vw,84px);line-height:1;letter-spacing:.01em;
+}
+.lead{margin:12px 0 0;color:var(--ink-soft);font-size:clamp(15px,2.4vw,18px)}
+.pick{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:clamp(14px,3vw,32px);margin-top:clamp(24px,5vw,48px);
+}
+@media (max-width:640px){.pick{grid-template-columns:minmax(0,1fr)}}
+.card{
+  display:flex;flex-direction:column;text-decoration:none;color:inherit;
+  border-radius:22px;overflow:hidden;
+  outline-offset:4px;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.card:hover{transform:translateY(-4px)}
+.card:focus-visible{outline:3px solid var(--blue)}
+.art{aspect-ratio:4/3;display:block;width:100%}
+.art svg{display:block;width:100%;height:100%}
+.info{padding:18px 22px 22px;display:flex;flex-direction:column;gap:4px}
+.who{font-family:var(--font-display);font-size:30px;font-weight:700;line-height:1.1}
+.name{font-size:16px;font-weight:500}
+.go{
+  margin-top:14px;align-self:flex-start;
+  font-weight:700;font-size:15px;padding:9px 20px;border-radius:999px;
+}
+.heun{background:var(--space);color:#fff;box-shadow:0 10px 28px -12px rgba(23,26,58,.7)}
+.heun .art{background:var(--space)}
+.heun .who{color:var(--star)}
+.heun .name{color:#d7d9f5}
+.heun .go{background:var(--cat);color:#2a1408}
+.ik{background:var(--sketch);color:#23292d;border:2px solid var(--sketch-line);box-shadow:6px 6px 0 var(--sketch-line)}
+.ik:hover{box-shadow:9px 9px 0 var(--sketch-line)}
+.ik .art{background:var(--sketch);border-bottom:2px dashed #b9c0c4}
+.ik .name{color:#4b5358}
+.ik .go{background:var(--blue);color:#fff}
+@media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}.tw{animation:none!important}}
+.tw{animation:tw 3.2s ease-in-out infinite}
+.tw:nth-child(2n){animation-delay:.9s}.tw:nth-child(3n){animation-delay:1.7s}
+@keyframes tw{0%,100%{opacity:1}50%{opacity:.25}}
+footer{margin-top:36px;color:var(--ink-soft);font-size:13px}
+</style>
 </head>
 <body>
-    <main>        
-        <img src="images/suji_dream_logo.png" width="500">
-        <br>
-        <a href="https://www.sujidream.org/">수지꿈학교 홈페이지</a>
-    </main>
+<main class="wrap">
+  <h1>숨은그림찾기</h1>
+  <p class="lead">풀어 볼 작품을 골라 보세요.</p>
+
+  <nav class="pick" aria-label="작품 선택">
+
+    <a class="card heun" href="space-cat.html">
+      <span class="art" aria-hidden="true">
+        <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="300" fill="#171a3a"/>
+          <g fill="#ffe79a">
+            <circle class="tw" cx="40" cy="48" r="2.5"/><circle class="tw" cx="98" cy="22" r="1.8"/>
+            <circle class="tw" cx="170" cy="46" r="2.2"/><circle class="tw" cx="262" cy="28" r="2.6"/>
+            <circle class="tw" cx="352" cy="62" r="2"/><circle class="tw" cx="376" cy="150" r="2.4"/>
+            <circle class="tw" cx="30" cy="170" r="2"/><circle class="tw" cx="70" cy="248" r="2.6"/>
+            <circle class="tw" cx="330" cy="256" r="1.9"/><circle class="tw" cx="214" cy="270" r="2.1"/>
+          </g>
+          <circle cx="330" cy="86" r="26" fill="#2b2f66"/>
+          <ellipse cx="330" cy="86" rx="44" ry="9" fill="none" stroke="#ff9a62" stroke-width="3" transform="rotate(-18 330 86)"/>
+          <circle cx="76" cy="226" r="40" fill="#2b2f66"/>
+          <circle cx="62" cy="214" r="7" fill="#232759"/><circle cx="92" cy="238" r="5" fill="#232759"/>
+          <!-- cat -->
+          <polygon points="148,128 156,78 192,112" fill="#ff9a62"/>
+          <polygon points="252,128 244,78 208,112" fill="#ff9a62"/>
+          <polygon points="158,114 160,92 178,108" fill="#ffc9a8"/>
+          <polygon points="242,114 240,92 222,108" fill="#ffc9a8"/>
+          <ellipse cx="200" cy="164" rx="66" ry="58" fill="#ff9a62"/>
+          <circle cx="200" cy="164" r="84" fill="rgba(200,225,255,.14)" stroke="#cfe2ff" stroke-width="5"/>
+          <ellipse cx="176" cy="156" rx="7" ry="10" fill="#171a3a"/><ellipse cx="224" cy="156" rx="7" ry="10" fill="#171a3a"/>
+          <circle cx="178" cy="152" r="2.5" fill="#fff"/><circle cx="226" cy="152" r="2.5" fill="#fff"/>
+          <polygon points="193,176 207,176 200,185" fill="#d9577a"/>
+          <path d="M200 185 q-8 10 -18 5 M200 185 q8 10 18 5" fill="none" stroke="#171a3a" stroke-width="3" stroke-linecap="round"/>
+          <g stroke="#171a3a" stroke-width="2.4" stroke-linecap="round">
+            <path d="M150 176 l-24 -5 M150 184 l-24 4 M250 176 l24 -5 M250 184 l24 4"/>
+          </g>
+          <path d="M150 112 a84 84 0 0 1 56 -26" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="info">
+        <span class="who">문흔 작품</span>
+        <span class="name">우주 고양이 숨은그림찾기</span>
+        <span class="go">시작하기</span>
+      </span>
+    </a>
+
+    <a class="card ik" href="small-house.html">
+      <span class="art" aria-hidden="true">
+        <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#4b5358" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- sun -->
+          <circle cx="332" cy="58" r="22"/>
+          <path d="M332 22v10M332 84v10M296 58h10M358 58h10M306 32l7 7M351 77l7 7M358 32l-7 7M313 77l-7 7" stroke-width="2.6"/>
+          <!-- cloud -->
+          <path d="M60 70q0-18 18-18 8-14 28-8 14-6 24 8 18 0 18 18z" stroke-width="2.6"/>
+          <!-- ground -->
+          <path d="M14 244q90-8 186-2t186 4" stroke-width="2.6"/>
+          <!-- house -->
+          <path d="M112 244V148h156v96"/>
+          <path d="M96 152L190 78l94 74"/>
+          <path d="M104 150L190 86l86 64" stroke-width="1.8" stroke="#8a9398"/>
+          <rect x="228" y="92" width="22" height="38" stroke-width="2.8"/>
+          <path d="M168 244v-52h40v52"/>
+          <circle cx="200" cy="220" r="2.4" fill="#4b5358"/>
+          <rect x="128" y="168" width="28" height="28"/><path d="M142 168v28M128 182h28" stroke-width="2"/>
+          <rect x="224" y="168" width="28" height="28"/><path d="M238 168v28M224 182h28" stroke-width="2"/>
+          <!-- tree -->
+          <path d="M318 244v-48"/>
+          <path d="M318 200q-40-6-36-40 4-34 36-34 34 0 36 34 2 34-36 40z" stroke-width="2.8"/>
+          <!-- flowers -->
+          <path d="M70 244v-24M92 244v-18" stroke-width="2.4"/>
+          <circle cx="70" cy="214" r="6" stroke-width="2.4"/><circle cx="92" cy="220" r="5" stroke-width="2.4"/>
+          <!-- path -->
+          <path d="M176 246q-14 20-40 30M200 246q10 18 36 34" stroke-width="2.2" stroke="#8a9398"/>
+        </svg>
+      </span>
+      <span class="info">
+        <span class="who">문익 작품</span>
+        <span class="name">숨은그림찾기 스케치북 (작은집)</span>
+        <span class="go">시작하기</span>
+      </span>
+    </a>
+
+  </nav>
+
+  <footer>작품 화면에서는 브라우저의 뒤로 가기 버튼으로 이 화면에 돌아올 수 있어요.</footer>
+</main>
 </body>
 </html>
